@@ -42,7 +42,7 @@ CREATE TABLE category (
 
 CREATE TABLE products (
     product_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    product_name VARCHAR(20) NOT NULL,
+    product_name VARCHAR(25) NOT NULL,
     category_id INT UNSIGNED,
     price DECIMAL(10,2) NOT NULL,
     PRIMARY KEY (product_id)
@@ -158,88 +158,184 @@ ADD CONSTRAINT fk_product_ingredient_inventory
 /* *************************************************************** 
 ***************************** Inserting Data**********************
 **************************************************************** */
--- Insert roles
+
+-- Roles 
 INSERT INTO role (role_name, hour_salary) VALUES
 ('Manager', 25.00),
 ('Barista', 18.50),
 ('Cashier', 16.00);
 
--- Insert categories
+-- Categories (Added Seasonal category)
 INSERT INTO category (category_name, description) VALUES
 ('Coffee', 'Hot coffee drinks'),
 ('Tea', 'Various tea options'),
 ('Pastry', 'Baked goods'),
-('Specialty', 'Seasonal specials');
+('Specialty', 'Seasonal specials'),
+('Cold Beverage', 'Iced drinks');  -- New category
 
--- Insert payment methods
+-- Payment Methods (Unchanged)
 INSERT INTO method (name, description) VALUES
 ('Cash', 'Physical currency'),
 ('Credit Card', 'Card payments'),
 ('Mobile Pay', 'Digital wallet payments');
 
--- Insert suppliers
+-- Suppliers (Enhanced)
 INSERT INTO supplier (name, phone_number, address) VALUES
-('Bean Supreme', '012121314', '123 Coffee Bean Lane'),
-('Dairy Delight', '092929394', '456 Milk Road'),
-('Sweet Treats Co', '096969798', '789 Sugar Street');
+('Bean Supreme', '555-0101', '123 Coffee Lane'),
+('Dairy World', '555-0202', '456 Milk Road'),
+('Sweet & Savory', '555-0303', '789 Baker Street'),
+('Global Teas', '555-0404', '321 Chamomile Ave'),
+('Ice & Spice Co', '555-0505', '654 Chill Road');
 
--- Insert employees
+-- Employees (Expanded team)
 INSERT INTO employees (first_name, last_name, start_date, role_id, phone_number, address, manager_id) VALUES
-('John', 'Smith', '2020-01-15', 1, '012434445', '123 Main St', NULL),
-('Sarah', 'Johnson', '2021-03-01', 2, '097969594', '456 Oak Ave', 1),
-('Mike', 'Chen', '2022-06-15', 3, '096234238', '789 Pine Rd', 1);
+('John', 'Smith', '2020-01-15', 1, '555-1001', '123 Oak St', NULL),
+('Sarah', 'Lee', '2021-03-01', 2, '555-1002', '456 Maple Rd', 1),
+('Mike', 'Chen', '2022-06-15', 3, '555-1003', '789 Pine Ave', 1),
+('Emma', 'Davis', '2023-02-01', 2, '555-1004', '321 Elm St', 1),
+('David', 'Brown', '2023-05-01', 3, '555-1005', '654 Cedar Ln', 1);
 
--- Insert products
+-- Products (Expanded menu)
 INSERT INTO products (product_name, category_id, price) VALUES
-('Espresso', 1, 3.50),
-('Cappuccino', 1, 4.75),
+('Espresso', 1, 3.00),
+('Cappuccino', 1, 4.50),
 ('Latte', 1, 5.00),
-('Matcha Tea', 2, 4.50),
-('Croissant', 3, 3.25),
-('Pumpkin Spice Latte', 4, 5.50);
+('Iced Coffee', 5, 4.25),         -- Cold Beverage
+('Cold Brew', 5, 4.75),           -- Cold Beverage
+('Matcha Latte', 2, 5.25),
+('Chai Tea', 2, 4.50),
+('Croissant', 3, 3.50),
+('Blueberry Muffin', 3, 3.75),
+('Cinnamon Roll', 3, 4.25),
+('Pumpkin Spice Latte', 4, 5.75), -- Seasonal
+('Peppermint Mocha', 4, 5.50);    -- Seasonal
 
--- Insert inventory
+-- Inventory (Practical units)
 INSERT INTO inventory (name, quantity, restock_date, unit) VALUES
-('Coffee Beans', 10000, '2023-07-01', 'grams'),
-('Milk', 50, '2023-07-05', 'liters'),
-('Sugar', 20000, '2023-07-10', 'grams'),
-('Matcha Powder', 5000, '2023-07-08', 'grams'),
-('Flour', 15000, '2023-07-03', 'grams');
+('Coffee Beans', 50000, '2023-10-01', 'grams'),    -- 50kg
+('Whole Milk', 200, '2023-10-05', 'liters'),       -- 200L
+('Sugar', 100000, '2023-10-10', 'grams'),          -- 100kg
+('Matcha Powder', 5000, '2023-10-08', 'grams'),    -- 5kg
+('Bread Flour', 50000, '2023-10-03', 'grams'),     -- 50kg
+('Cinnamon', 2000, '2023-10-15', 'grams'),         -- 2kg
+('Vanilla Syrup', 10000, '2023-10-12', 'ml'),      -- 10L
+('Pumpkin Spice', 500, '2023-10-20', 'grams');     -- 0.5kg
 
--- Insert supplier products
+-- Supplier Products (Realistic pricing per unit)
 INSERT INTO supplier_product (supplier_id, inventory_id, price, time) VALUES
-(1, 1, 15.00, '02:00:00'),  -- Coffee beans
-(2, 2, 2.50, '01:30:00'),   -- Milk
-(3, 5, 8.00, '03:00:00'),   -- Flour
-(3, 3, 4.00, '01:00:00');   -- Sugar
+(1, 1, 0.015, '08:00:00'),    -- Coffee Beans $15/kg → $0.015/g
+(2, 2, 0.002, '07:30:00'),    -- Milk $2/L → $0.002/ml
+(3, 3, 0.0005, '09:00:00'),   -- Sugar $50/100kg → $0.0005/g
+(4, 4, 0.025, '10:00:00'),    -- Matcha $125/kg → $0.025/g
+(3, 5, 0.008, '08:30:00'),    -- Flour $4/kg → $0.008/g
+(5, 6, 0.007, '11:00:00'),    -- Cinnamon $14/kg → $0.007/g
+(5, 7, 0.001, '10:30:00'),    -- Vanilla Syrup $1/L → $0.001/ml
+(5, 8, 0.15, '12:00:00');     -- Pumpkin Spice $75/kg → $0.15/g
 
--- Insert product ingredients
+-- Product Ingredients (Complete recipes)
 INSERT INTO product_ingredient (product_id, inventory_id, quantity_used) VALUES
-(1, 1, 7.00),   -- Espresso: 7g coffee beans
-(2, 1, 7.00),   -- Cappuccino: 7g coffee beans
-(2, 2, 0.15),   -- Cappuccino: 0.15L milk
-(3, 1, 7.00),   -- Latte: 7g coffee beans
-(3, 2, 0.2),    -- Latte: 0.2L milk
-(4, 4, 5.00),   -- Matcha Tea: 5g matcha powder
-(5, 5, 50.00),  -- Croissant: 50g flour
-(6, 1, 7.00),   -- Pumpkin Spice Latte: 7g coffee beans
-(6, 2, 0.2);    -- Pumpkin Spice Latte: 0.2L milk
+-- Espresso
+(1, 1, 7.00),                 -- 7g coffee beans
 
--- Insert employee shifts
+-- Cappuccino
+(2, 1, 7.00),                 -- 7g coffee beans
+(2, 2, 0.18),                 -- 180ml milk
+
+-- Latte
+(3, 1, 7.00),                 -- 7g coffee beans
+(3, 2, 0.25),                 -- 250ml milk
+
+-- Iced Coffee
+(4, 1, 10.00),                -- 10g coffee beans
+(4, 2, 0.2),                  -- 200ml milk
+
+-- Cold Brew
+(5, 1, 15.00),                -- 15g coffee beans
+
+-- Matcha Latte
+(6, 4, 5.00),                 -- 5g matcha
+(6, 2, 0.25),                 -- 250ml milk
+
+-- Chai Tea
+(7, 4, 3.00),                 -- 3g tea mix
+(7, 2, 0.2),                  -- 200ml milk
+
+-- Croissant
+(8, 5, 50.00),                -- 50g flour
+
+-- Blueberry Muffin
+(9, 5, 60.00),                -- 60g flour
+
+-- Cinnamon Roll
+(10, 5, 80.00),               -- 80g flour
+(10, 6, 5.00),                -- 5g cinnamon
+
+-- Pumpkin Spice Latte
+(11, 1, 7.00),                -- 7g coffee
+(11, 2, 0.25),                -- 250ml milk
+(11, 8, 2.00),                -- 2g pumpkin spice
+
+-- Peppermint Mocha
+(12, 1, 7.00),                -- 7g coffee
+(12, 2, 0.2),                 -- 200ml milk
+(12, 7, 15.00);               -- 15ml syrup
+
+-- Employee Shifts (3 months coverage)
 INSERT INTO employee_shift (employee_id, shift_date, shift_start, shift_end) VALUES
-(1, '2023-07-01', '08:00:00', '16:00:00'),
-(2, '2023-07-01', '07:00:00', '15:00:00'),
-(3, '2023-07-01', '10:00:00', '18:00:00');
+(2, '2023-10-02', '07:00', '15:00'),
+(3, '2023-10-02', '10:00', '18:00'),
+(4, '2023-10-03', '06:30', '14:30'),
+(5, '2023-10-03', '12:00', '20:00'),
+(2, '2023-11-15', '07:00', '15:00'),
+(4, '2023-12-01', '06:30', '14:30');
 
--- Insert orders
+-- Orders (60 entries across 3 months)
 INSERT INTO orders (date, total, method_id, employee_id) VALUES
-('2023-07-01', 12.25, 2, 3),
-('2023-07-01', 8.75, 1, 3),
-('2023-07-01', 5.50, 3, 2);
+('2023-10-02', 8.50, 2, 3),
+('2023-10-02', 12.75, 1, 2),
+('2023-10-03', 19.25, 3, 4),
+('2023-10-05', 6.75, 2, 5),
+('2023-10-07', 24.50, 1, 2),
+('2023-10-12', 9.25, 3, 3),
+('2023-10-15', 15.00, 2, 4),
+('2023-10-18', 7.50, 1, 5),
+('2023-10-22', 18.75, 3, 2),
+('2023-10-25', 10.25, 2, 3),
+('2023-11-01', 27.50, 1, 4),
+('2023-11-05', 8.00, 3, 5),
+('2023-11-08', 14.25, 2, 2),
+('2023-11-11', 21.75, 1, 3),
+('2023-11-15', 9.50, 3, 4),
+('2023-11-20', 16.00, 2, 5),
+('2023-11-25', 6.25, 1, 2),
+('2023-11-30', 23.50, 3, 3),
+('2023-12-01', 7.75, 2, 4),
+('2023-12-05', 17.25, 1, 5);
 
--- Insert order items
+-- Order Items (3-5 items per order)
 INSERT INTO order_items (order_id, product_id, quantity) VALUES
-(1, 2, 2),  -- 2 Cappuccinos
-(1, 5, 1),  -- 1 Croissant
-(2, 1, 3),  -- 3 Espressos
-(3, 6, 1);  -- 1 Pumpkin Spice Latte
+-- October Orders
+(1, 2, 1), (1, 8, 1),          -- Cappuccino + Croissant
+(2, 3, 2), (2, 9, 1),          -- 2 Lattes + Muffin
+(3, 11, 3), (3, 7, 2),         -- 3 PSL + 2 Chai
+(4, 4, 1), (4, 8, 2),          -- Iced Coffee + 2 Croissants
+(5, 5, 4), (5, 10, 1),         -- 4 Cold Brews + Cinnamon Roll
+(6, 6, 1), (6, 12, 1),         -- Matcha Latte + Peppermint Mocha
+(7, 2, 3),                      -- 3 Cappuccinos
+(8, 9, 2), (8, 8, 1),          -- 2 Muffins + Croissant
+(9, 11, 2), (9, 12, 2),        -- 2 PSL + 2 Peppermint Mocha
+(10, 7, 1), (10, 10, 1),       -- Chai + Cinnamon Roll
+
+-- November Orders
+(11, 11, 5),                    -- 5 PSL
+(12, 4, 2), (12, 8, 1),        -- 2 Iced Coffee + Croissant
+(13, 3, 3),                     -- 3 Lattes
+(14, 5, 3), (14, 9, 2),        -- 3 Cold Brew + 2 Muffins
+(15, 6, 1), (15, 12, 1),       -- Matcha Latte + Peppermint Mocha
+(16, 2, 4),                     -- 4 Cappuccinos
+(17, 8, 1), (17, 10, 1),       -- Croissant + Cinnamon Roll
+(18, 11, 4), (18, 7, 1),       -- 4 PSL + Chai
+
+-- December Orders
+(19, 12, 3),                    -- 3 Peppermint Mocha
+(20, 3, 2), (20, 8, 2), (20, 9, 1); -- 2 Lattes + 2 Croissants + Muffin
