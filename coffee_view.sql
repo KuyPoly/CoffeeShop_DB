@@ -1,11 +1,5 @@
 USE coffee_shop;
 
-/* *************************************************************** 
-	*************************** View ************************
-**************************************************************** */
-
-USE coffee_shop;
-
 -- -----------------------------
 -- DROP Old Views (to avoid errors)
 -- -----------------------------
@@ -32,6 +26,8 @@ SELECT
 FROM orders o
 GROUP BY YEARWEEK(o.date, 1);
 
+SELECT * FROM aggregated_sales;
+
 -- -----------------------------
 -- 2. Daily Sales Report (kept as is)
 -- -----------------------------
@@ -43,6 +39,8 @@ SELECT
 FROM orders o
 GROUP BY DATE(o.date);
 
+SELECT * FROM daily_sales_report;
+
 -- -----------------------------
 -- 3. Employee Shift Hours Report
 -- (Assumes a `shifts` table exists)
@@ -53,9 +51,11 @@ SELECT
     CONCAT(e.first_name, ' ', e.last_name) AS employee_name, 
     SUM(TIMESTAMPDIFF(HOUR, s.shift_start, s.shift_end)) AS total_shift_hours
 FROM employees e
-JOIN shifts s ON e.employee_id = s.employee_id
+JOIN shift s ON e.employee_id = s.employee_id
 GROUP BY e.employee_id, employee_name
 ORDER BY total_shift_hours DESC;
+
+SELECT * FROM employee_sales_performance;
 
 -- -----------------------------
 -- 4. Customer Order History (Grouped by Order)
@@ -72,6 +72,8 @@ JOIN order_items oi ON o.order_id = oi.order_id
 GROUP BY o.order_id, o.date, o.total
 ORDER BY o.date DESC;
 
+SELECT * FROM customer_order_history;
+
 -- -----------------------------
 -- 5. Product Popularity
 -- -----------------------------
@@ -85,6 +87,8 @@ FROM order_items oi
 JOIN products p ON oi.product_id = p.product_id
 GROUP BY oi.product_id, p.product_name
 ORDER BY total_sold DESC;
+
+SELECT * FROM product_popularity;
 
 -- -----------------------------
 -- 6. Category Sales Report
@@ -100,6 +104,8 @@ JOIN category c ON p.category_id = c.category_id
 GROUP BY c.category_id, c.category_name
 ORDER BY total_revenue DESC;
 
+SELECT * FROM category_sales_report;
+
 -- -----------------------------
 -- 7. Low Stock Report
 -- -----------------------------
@@ -112,6 +118,8 @@ SELECT
 FROM inventory i
 WHERE i.quantity < 10
 ORDER BY i.quantity ASC;
+
+SELECT * FROM low_stock_report;
 
 -- -----------------------------
 -- 8. Monthly Top Products
@@ -128,23 +136,10 @@ JOIN products p ON oi.product_id = p.product_id
 GROUP BY sale_month, p.product_id, p.product_name
 ORDER BY sale_month, total_sold DESC;
 
--- -----------------------------
--- 9. Customer Frequent Purchases
--- (Requires `customers` table)
--- -----------------------------
-CREATE VIEW customer_frequent_purchases AS
-SELECT 
-    c.customer_id,
-    CONCAT(c.first_name, ' ', c.last_name) AS customer_name,
-    COUNT(o.order_id) AS total_orders,
-    SUM(o.total) AS total_spent
-FROM customers c
-JOIN orders o ON c.customer_id = o.customer_id
-GROUP BY c.customer_id, customer_name
-ORDER BY total_orders DESC;
+SELECT * FROM monthly_top_products;
 
 -- -----------------------------
--- 10. Order Peak Hours
+-- 9. Order Peak Hours
 -- -----------------------------
 CREATE VIEW order_peak_hours AS
 SELECT 
@@ -154,8 +149,10 @@ FROM orders o
 GROUP BY order_hour
 ORDER BY total_orders DESC;
 
+SELECT * FROM order_peak_hours;
+
 -- -----------------------------
--- 11. Average Spending per Day
+-- 10. Average Spending per Day
 -- -----------------------------
 CREATE VIEW avg_spending_per_day AS
 SELECT 
@@ -167,8 +164,12 @@ FROM orders o
 GROUP BY DATE(o.date)
 ORDER BY sale_date DESC;
 
+SELECT * FROM avg_spending_per_day;
+
 -- -----------------------------
 -- View List Check
 -- -----------------------------
 SHOW FULL TABLES IN coffee_shop 
 WHERE TABLE_TYPE = 'VIEW';
+
+
