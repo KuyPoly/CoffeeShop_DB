@@ -1,7 +1,7 @@
 /***************************************************************
 ************************* VIEW DEFINITIONS **********************
 ****************************************************************/
-
+USE coffee_shop;
 -- ==================== CORE BUSINESS VIEWS ====================
 
 -- 1. Employee Information View
@@ -16,12 +16,9 @@ SELECT
     e.phone_number,
     e.address,
     CONCAT(m.first_name, ' ', m.last_name) AS manager_name
-FROM 
-    employees e
-JOIN 
-    role r ON e.role_id = r.role_id
-LEFT JOIN 
-    employees m ON e.manager_id = m.employee_id;
+FROM employees e
+JOIN role r ON e.role_id = r.role_id
+LEFT JOIN employees m ON e.manager_id = m.employee_id;
 
 -- Should show all employees with correct role assignments
 SELECT * FROM employee_info;
@@ -35,16 +32,11 @@ SELECT
     c.category_name,
     p.price,
     GROUP_CONCAT(i.name SEPARATOR ', ') AS ingredients
-FROM 
-    products p
-JOIN 
-    category c ON p.category_id = c.category_id
-JOIN 
-    product_ingredient pi ON p.product_id = pi.product_id
-JOIN 
-    inventory i ON pi.inventory_id = i.inventory_id
-GROUP BY 
-    p.product_id, p.product_name, c.category_name, p.price;
+FROM products p
+JOIN category c ON p.category_id = c.category_id
+JOIN product_ingredient pi ON p.product_id = pi.product_id
+JOIN inventory i ON pi.inventory_id = i.inventory_id
+GROUP BY p.product_id, p.product_name, c.category_name, p.price;
 
 --  Should show espresso, matcha latte, pumpkin spice with ingredients
 SELECT * FROM product_details WHERE product_id IN (1, 6, 11);
@@ -60,16 +52,11 @@ SELECT
     SUM(o.total) AS total_revenue,
     SUM(oi.quantity) AS total_items_sold,
     GROUP_CONCAT(DISTINCT p.product_name SEPARATOR ', ') AS products_sold
-FROM 
-    orders o
-JOIN 
-    order_items oi ON o.order_id = oi.order_id
-JOIN 
-    products p ON oi.product_id = p.product_id
-GROUP BY 
-    o.date
-ORDER BY 
-    o.date;
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN products p ON oi.product_id = p.product_id
+GROUP BY o.date
+ORDER BY o.date;
 
 -- Should show 2 orders totaling $8.50 + $12.75 = $21.25
 SELECT * FROM daily_sales WHERE date = '2023-10-02';
@@ -83,50 +70,14 @@ SELECT
     c.category_name,
     COUNT(oi.order_id) AS times_ordered,
     SUM(oi.quantity) AS total_quantity_sold
-FROM 
-    products p
-JOIN 
-    category c ON p.category_id = c.category_id
-JOIN 
-    order_items oi ON p.product_id = oi.product_id
-GROUP BY 
-    p.product_id, p.product_name, c.category_name
-ORDER BY 
-    total_quantity_sold DESC;
+FROM products p
+JOIN category c ON p.category_id = c.category_id
+JOIN order_items oi ON p.product_id = oi.product_id
+GROUP BY p.product_id, p.product_name, c.category_name
+ORDER BY total_quantity_sold DESC;
 
 -- Should show most ordered products by quantity
 SELECT * FROM customer_favorites LIMIT 3;
-
--- 5. Seasonal Product Performance View
--- Tracks performance of seasonal offerings by month
-CREATE OR REPLACE VIEW seasonal_performance AS
-SELECT 
-    p.product_id,
-    p.product_name,
-    YEAR(o.date) AS year,
-    MONTH(o.date) AS month,
-    COUNT(o.order_id) AS orders_count,
-    SUM(oi.quantity) AS units_sold,
-    SUM(oi.quantity * p.price) AS revenue_generated,
-    COUNT(DISTINCT DATE(o.date)) AS days_sold
-FROM 
-    products p
-JOIN 
-    order_items oi ON p.product_id = oi.product_id
-JOIN 
-    orders o ON oi.order_id = o.order_id
-JOIN 
-    category cat ON p.category_id = cat.category_id
-WHERE 
-    cat.category_name = 'Seasonal'
-GROUP BY 
-    p.product_id, p.product_name, YEAR(o.date), MONTH(o.date)
-ORDER BY 
-    year, month, units_sold DESC;
-
--- Test with explicit year-month filter
-SELECT * FROM seasonal_performance 
-WHERE year = 2023 AND month = 10;
 
 -- ==================== OPERATIONAL VIEWS ====================
 
@@ -140,14 +91,10 @@ SELECT
     es.shift_start,
     es.shift_end,
     TIMESTAMPDIFF(HOUR, es.shift_start, es.shift_end) AS hours_worked
-FROM 
-    employee_shift es
-JOIN 
-    employees e ON es.employee_id = e.employee_id
-JOIN 
-    role r ON e.role_id = r.role_id
-ORDER BY 
-    es.shift_date, es.shift_start;
+FROM employee_shift es
+JOIN employees e ON es.employee_id = e.employee_id
+JOIN role r ON e.role_id = r.role_id
+ORDER BY es.shift_date, es.shift_start;
 
 -- Should show 8-hour shift for employee 2
 SELECT * FROM employee_schedule WHERE shift_date = '2023-10-02';
@@ -168,12 +115,9 @@ SELECT
         WHEN i.quantity < 500 AND i.unit = 'ml' THEN 'Low'
         ELSE 'Adequate'
     END AS stock_level
-FROM 
-    inventory i
-JOIN 
-    supplier_product sp ON i.inventory_id = sp.inventory_id
-JOIN 
-    supplier s ON sp.supplier_id = s.supplier_id;
+FROM inventory i
+JOIN supplier_product sp ON i.inventory_id = sp.inventory_id
+JOIN supplier s ON sp.supplier_id = s.supplier_id;
 
 -- Should show current coffee bean stock level
 SELECT * FROM inventory_status WHERE name = 'Coffee Beans';
@@ -188,16 +132,11 @@ SELECT
     SUM(pi.quantity_used * oi.quantity) AS total_used,
     i.quantity AS current_stock,
     ROUND((i.quantity / NULLIF(SUM(pi.quantity_used * oi.quantity), 0)) * 100, 2) AS remaining_percentage
-FROM 
-    inventory i
-JOIN 
-    product_ingredient pi ON i.inventory_id = pi.inventory_id
-JOIN 
-    order_items oi ON pi.product_id = oi.product_id
-GROUP BY 
-    i.inventory_id, i.name, i.unit, i.quantity
-ORDER BY 
-    remaining_percentage ASC;
+FROM inventory i
+JOIN product_ingredient pi ON i.inventory_id = pi.inventory_id
+JOIN order_items oi ON pi.product_id = oi.product_id
+GROUP BY i.inventory_id, i.name, i.unit, i.quantity
+ORDER BY remaining_percentage ASC;
 
 -- Should show milk usage percentage
 SELECT * FROM ingredient_usage_report WHERE ingredient_name LIKE '%Milk%';
@@ -213,18 +152,12 @@ SELECT
     c.category_name,
     SUM(oi.quantity) AS total_quantity_sold,
     SUM(oi.quantity * p.price) AS total_revenue
-FROM 
-    products p
-JOIN 
-    category c ON p.category_id = c.category_id
-JOIN 
-    order_items oi ON p.product_id = oi.product_id
-JOIN 
-    orders o ON oi.order_id = o.order_id
-GROUP BY 
-    p.product_id, p.product_name, c.category_name
-ORDER BY 
-    total_quantity_sold DESC;
+FROM products p
+JOIN category c ON p.category_id = c.category_id
+JOIN order_items oi ON p.product_id = oi.product_id
+JOIN orders o ON oi.order_id = o.order_id
+GROUP BY p.product_id, p.product_name, c.category_name
+ORDER BY total_quantity_sold DESC;
 
 -- Should show Pumpkin Spice Latte sales
 SELECT * FROM top_selling_products WHERE product_id = 11;
@@ -241,16 +174,11 @@ SELECT
     COUNT(DISTINCT es.shift_date) AS days_worked,
     SUM(TIMESTAMPDIFF(HOUR, es.shift_start, es.shift_end)) AS total_hours_worked,
     SUM(o.total) / NULLIF(COUNT(DISTINCT es.shift_date), 0) AS avg_sales_per_day
-FROM 
-    employees e
-JOIN 
-    role r ON e.role_id = r.role_id
-LEFT JOIN 
-    orders o ON e.employee_id = o.employee_id
-LEFT JOIN 
-    employee_shift es ON e.employee_id = es.employee_id
-GROUP BY 
-    e.employee_id, employee_name, r.role_name;
+FROM employees e
+JOIN role r ON e.role_id = r.role_id
+LEFT JOIN orders o ON e.employee_id = o.employee_id
+LEFT JOIN employee_shift es ON e.employee_id = es.employee_id
+GROUP BY e.employee_id, employee_name, r.role_name;
 
 -- Should show Sarah Lee's performance stats
 SELECT * FROM employee_performance WHERE employee_id = 2;
@@ -266,18 +194,12 @@ SELECT
     SUM(o.total) AS total_sales,
     AVG(o.total) AS average_order_value,
     SUM(o.total) / NULLIF(SUM(TIMESTAMPDIFF(HOUR, es.shift_start, es.shift_end)), 0) AS sales_per_hour
-FROM 
-    employees e
-JOIN 
-    role r ON e.role_id = r.role_id
-LEFT JOIN 
-    orders o ON e.employee_id = o.employee_id
-LEFT JOIN 
-    employee_shift es ON e.employee_id = es.employee_id
-GROUP BY 
-    e.employee_id, employee_name, r.role_name
-ORDER BY 
-    total_sales DESC;
+FROM employees e
+JOIN role r ON e.role_id = r.role_id
+LEFT JOIN orders o ON e.employee_id = o.employee_id
+LEFT JOIN employee_shift es ON e.employee_id = es.employee_id
+GROUP BY e.employee_id, employee_name, r.role_name
+ORDER BY total_sales DESC;
 
 -- Should show top performing employee
 SELECT * FROM employee_sales_comparison ORDER BY total_sales DESC LIMIT 1;
@@ -294,40 +216,16 @@ SELECT
     ROUND(SUM(pi.quantity_used * sp.price), 2) AS cost_per_unit,
     ROUND(p.price - SUM(pi.quantity_used * sp.price), 2) AS profit_per_unit,
     ROUND((p.price - SUM(pi.quantity_used * sp.price)) / p.price * 100, 2) AS profit_margin
-FROM 
-    products p
-JOIN 
-    product_ingredient pi ON p.product_id = pi.product_id
-JOIN 
-    inventory i ON pi.inventory_id = i.inventory_id
-JOIN 
-    supplier_product sp ON i.inventory_id = sp.inventory_id
-GROUP BY 
-    p.product_id, p.product_name, p.price;
+FROM products p
+JOIN product_ingredient pi ON p.product_id = pi.product_id
+JOIN inventory i ON pi.inventory_id = i.inventory_id
+JOIN supplier_product sp ON i.inventory_id = sp.inventory_id
+GROUP BY p.product_id, p.product_name, p.price;
 
 -- Should show espresso cost breakdown
 SELECT * FROM product_cost_analysis WHERE product_id = 1;
 
--- 13. Busiest Hours Analysis View
--- Identifies peak business hours for staffing decisions
-CREATE OR REPLACE VIEW busiest_hours AS
-SELECT 
-    HOUR(o.date) AS hour_of_day,
-    COUNT(o.order_id) AS total_orders,
-    SUM(o.total) AS total_revenue,
-    AVG(o.total) AS average_order_value,
-    COUNT(DISTINCT o.employee_id) AS staff_count
-FROM 
-    orders o
-GROUP BY 
-    HOUR(o.date)
-ORDER BY 
-    total_orders DESC;
-
--- Should show morning rush hour data
-SELECT * FROM busiest_hours WHERE hour_of_day BETWEEN 7 AND 9;
-
--- 14. Supplier Performance View
+-- 13. Supplier Performance View
 -- Evaluates suppliers based on pricing and product range
 CREATE OR REPLACE VIEW supplier_performance AS
 SELECT 
@@ -337,39 +235,28 @@ SELECT
     AVG(sp.price) AS average_price,
     MIN(sp.price) AS lowest_price,
     MAX(sp.price) AS highest_price
-FROM 
-    supplier s
-JOIN 
-    supplier_product sp ON s.supplier_id = sp.supplier_id
-GROUP BY 
-    s.supplier_id, s.name
-ORDER BY 
-    average_price;
+FROM supplier s
+JOIN supplier_product sp ON s.supplier_id = sp.supplier_id
+GROUP BY s.supplier_id, s.name
+ORDER BY average_price;
 
 -- Should show coffee bean supplier stats
 SELECT * FROM supplier_performance WHERE supplier_name LIKE '%Bean%';
 
--- 15. Product Pairing Analysis View
+-- 14. Product Pairing Analysis View
 -- Reveals which products are frequently ordered together
 CREATE OR REPLACE VIEW product_pairings AS
 SELECT 
     p1.product_name AS product_1,
     p2.product_name AS product_2,
     COUNT(*) AS times_ordered_together
-FROM 
-    order_items oi1
-JOIN 
-    order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.product_id < oi2.product_id
-JOIN 
-    products p1 ON oi1.product_id = p1.product_id
-JOIN 
-    products p2 ON oi2.product_id = p2.product_id
-GROUP BY 
-    p1.product_name, p2.product_name
-HAVING 
-    COUNT(*) > 1
-ORDER BY 
-    times_ordered_together DESC;
+FROM order_items oi1
+JOIN order_items oi2 ON oi1.order_id = oi2.order_id AND oi1.product_id < oi2.product_id
+JOIN products p1 ON oi1.product_id = p1.product_id
+JOIN products p2 ON oi2.product_id = p2.product_id
+GROUP BY p1.product_name, p2.product_name
+HAVING COUNT(*) > 1
+ORDER BY times_ordered_together DESC;
 
 -- Should show top product combinations
 SELECT * FROM product_pairings LIMIT 3;
