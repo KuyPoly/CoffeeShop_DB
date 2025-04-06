@@ -9,10 +9,31 @@ SELECT p.product_id, p.product_name, c.category_name, p.price
 FROM products p
 JOIN category c ON p.category_id = c.category_id;
 
--- Get All Employees and Their Roles
-SELECT e.employee_id, e.first_name, e.last_name, r.role_name, r.hour_salary
+-- Get All Employees and Their Roles and Their salary
+SELECT 
+    e.employee_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    r.role_name,
+    r.hour_salary,
+    SUM(TIMESTAMPDIFF(HOUR, s.shift_start, s.shift_end)) AS total_hours_worked,
+    SUM(TIMESTAMPDIFF(HOUR, s.shift_start, s.shift_end) * r.hour_salary) AS total_salary
 FROM employees e
-JOIN role r ON e.role_id = r.role_id;
+JOIN role r ON e.role_id = r.role_id
+JOIN employee_shift s ON e.employee_id = s.employee_id
+GROUP BY e.employee_id, r.role_name, r.hour_salary
+ORDER BY e.employee_id;
+
+-- Get Employee Shifts with Start and End Times
+SELECT 
+    e.employee_id,
+    CONCAT(e.first_name, ' ', e.last_name) AS employee_name,
+    s.shift_date,
+    s.shift_start,
+    s.shift_end
+FROM employee_shift s
+JOIN employees e ON s.employee_id = e.employee_id
+ORDER BY s.shift_date, s.shift_start;
+
 
 -- Get Total Sales by Each Employee
 SELECT e.employee_id, e.first_name, e.last_name, SUM(o.total) AS total_sales
@@ -45,7 +66,7 @@ JOIN inventory i ON sp.inventory_id = i.inventory_id;
 
 -- Get Low-Stock Inventory Items (Threshold: 100)
 SELECT * FROM inventory
-WHERE quantity < 100;
+WHERE quantity < 1000;
 
 -- Get Total Hours Worked by Each Employee (From employee_shift)
 SELECT 
